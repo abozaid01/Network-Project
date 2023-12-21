@@ -122,6 +122,13 @@ class ClientThread(threading.Thread):
                     else:
                         self.tcpClientSocket.close()
                         break
+
+                #  RETRIVE #
+                elif message[0] == "RETRIVE":
+                    online_peers_cursor = db.retrieve_online()
+                    online_peers_list = [peer["username"] for peer in online_peers_cursor]
+                    self.tcpClientSocket.send(str(online_peers_list).encode())
+                    
                 #   SEARCH  #
                 elif message[0] == "SEARCH":
                     # checks if an account with the username exists
@@ -255,4 +262,3 @@ while inputs:
                     
 # registry tcp socket is closed
 tcpSocket.close()
-

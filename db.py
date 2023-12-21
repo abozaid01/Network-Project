@@ -12,7 +12,7 @@ class DB:
 
     # checks if an account with the username exists
     def is_account_exist(self, username):
-        if self.db.accounts.find({'username': username}).count() > 0:
+        if self.db.accounts.count_documents({'username': username}) > 0:
             return True
         else:
             return False
@@ -24,7 +24,7 @@ class DB:
             "username": username,
             "password": password
         }
-        self.db.accounts.insert(account)
+        self.db.accounts.insert_one(account)
 
 
     # retrieves the password for a given username
@@ -34,10 +34,14 @@ class DB:
 
     # checks if an account with the username online
     def is_account_online(self, username):
-        if self.db.online_peers.find({"username": username}).count() > 0:
+        if self.db.online_peers.count_documents({"username": username}) > 0:
             return True
         else:
             return False
+        
+    # Retrive all online peers
+    def retrieve_online(self):
+        return self.db.online_peers.find()
 
     
     # logs in the user
@@ -47,15 +51,30 @@ class DB:
             "ip": ip,
             "port": port
         }
-        self.db.online_peers.insert(online_peer)
+        self.db.online_peers.insert_one(online_peer)
     
 
     # logs out the user 
     def user_logout(self, username):
-        self.db.online_peers.remove({"username": username})
+        self.db.online_peers.delete_one({"username": username})
     
 
     # retrieves the ip address and the port number of the username
     def get_peer_ip_port(self, username):
         res = self.db.online_peers.find_one({"username": username})
         return (res["ip"], res["port"])
+    
+
+db_instance = DB()
+
+# Retrieve all online peers
+online_peers_cursor = db_instance.retrieve_online()
+
+# Extract the usernames from the cursor and convert to a list
+online_peers_list = [peer["username"] for peer in online_peers_cursor]
+
+# Print the list of online peers
+# print("Online peers:")
+# print(str(online_peers_list))
+# for peer_username in online_peers_list:
+#     print(peer_username)
